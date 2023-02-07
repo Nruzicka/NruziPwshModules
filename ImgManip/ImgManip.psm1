@@ -37,7 +37,6 @@ function CopyPath {
 
     End{
         $ModPath = $sb.ToString()
-        $sb.Dispose()
         return $ModPath
     }
 
@@ -53,6 +52,7 @@ function GetBitmap {
    )
    
    Add-Type -AssemblyName System.Drawing
+   # Note: Use the notation on the next line to create bitmap from img. Do not use new-object.
    $Image = [System.Drawing.Bitmap]::FromFile((Resolve-Path -Path $Path))   
    return $Image
 }
@@ -172,6 +172,7 @@ function ResizePic {
     
     Begin {
         Add-Type -AssemblyName System.Drawing
+        $Destination = (Resolve-Path -Path $Destination).Path
     }
 
     #Note, process blocks are mandatory for piping arrays.
@@ -179,13 +180,13 @@ function ResizePic {
         foreach($Img in $ImgPath){
             $DestPath = CopyPath -Path $Img -Tag '_resized' -Destination $Destination
             # Create a new image, then have the Graphics class draw on it based on the old image.
-            $OldImg = New-Object -TypeName System.Drawing.Bitmap -ArgumentList $Img
-            $NewImg = New-Object -TypeName System.Drawing.Bitmap -ArgumentList $Width,$Height
+            $OldImg = [Drawing.Bitmap]::FromFile((Resolve-Path -Path $Img))
+            $NewImg = New-Object -TypeName System.Drawing.Bitmap -ArgumentList $Width, $Height
             $NewGraphic = [System.Drawing.Graphics]::FromImage($NewImg)
             $NewGraphic.PixelOffsetMode = "HighQuality"
             $NewGraphic.SmoothingMode = "HighQuality"
             $NewGraphic.InterpolationMode = "HighQualityBicubic"
-            $NewGraphic.DrawImage($OldImg,0,0,$Width,$Height)
+            $NewGraphic.DrawImage($OldImg, 0, 0, $Width, $Height)
             $NewImg.Save($DestPath)
 
             $OldImg.Dispose()
@@ -220,12 +221,13 @@ function ConvertPicTo(){
     )
 
     Begin {
-        Add-Type -AssemblyName 'System.Windows.Forms'
+        Add-Type -AssemblyName System.Drawing
+        $Destination = (Resolve-Path -Path $Destination).Path
     }
 
     Process {
         foreach($Img in $ImgPath){
-            $Bitmap = New-Object -TypeName System.Drawing.Bitmap($Img)
+            $Bitmap = [Drawing.Bitmap]::FromFile((Resolve-Path -Path $Img))
             $DestPath = CopyPath -Path $Img -Tag '_new' -NewExt $ImgType -Destination $Destination
             $Bitmap.Save($DestPath, $ImgType)
             $Bitmap.Dispose()
@@ -236,5 +238,3 @@ function ConvertPicTo(){
 }
 
 Export-ModuleMember -Function ConvertPicTo
-
-   
