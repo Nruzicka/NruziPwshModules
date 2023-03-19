@@ -36,3 +36,29 @@ function ToggleForeground {
 }
 
 Export-ModuleMember -Function ToggleForeground
+
+
+function GetSize{
+    param(
+        [Parameter(Mandatory=$True, ValueFromPipeline=$true)]
+        [string]
+        $path,
+
+        [Parameter(Mandatory=$false)]
+        [ValidateSet('KB', 'MB', 'GB', 'TB')]
+        [string]
+        $measurement
+    )
+    
+    $size = (Get-ChildItem $path -Force -Recurse | Measure-Object -Property Length -Sum).Sum
+
+    switch ($measurement) {
+        'KB' {return $($size/1000)}
+        'MB' {return $($size/1000000)}
+        'GB' {return $($size/1000000000)}
+        'TB' {return $($size/1000000000000)}
+        Default {return $size}
+    }
+}
+
+Export-ModuleMember -Function GetSize
