@@ -77,3 +77,42 @@ function UniqueHeaders {
 }
 
 Export-ModuleMember -Function UniqueHeaders
+
+function PrettifyJSON {
+    param(
+        [Parameter(Mandatory=$false, ValueFromPipeline=$true)]
+        [object]$inputObject,
+
+        [Parameter(Mandatory=$false)]
+        [ValidateScript({Test-Path -Path $_ -PathType Leaf -IsValid}, ErrorMessage = "Input from file must be a valid file path.")]
+        [string]$inputFile
+    )
+
+    Begin {
+        $jsonTxt = ""
+        $jsonObj = $null
+        if ($inputFile -ne "" -and $null -ne $inputObject) {
+            Throw "Only one parameter of either <inputFile> or <inputObject> can be entered."
+        } 
+    }
+
+    Process {
+        #Ensuring function from pipeline completes output.
+        if ($null -ne $inputObject) {
+            $jsonTxt += $inputObject
+        }
+    }
+
+    End {
+        if ($null -ne $inputObject) {
+            $jsonObj = $jsonTxt | ConvertFrom-Json
+        } elseif ($inputFile -ne "") {
+            $jsonObj = (Get-Content -Path (Resolve-Path -Path $inputFile)) | ConvertFrom-Json
+        } else {
+            Throw "Error: Null value given."
+        }
+        return ($jsonObj | ConvertTo-Json -Depth 100)
+    }
+}
+
+Export-ModuleMember -Function PrettifyJSON
