@@ -4,7 +4,7 @@ function head {
         [ValidateScript({Test-Path -Path $_ -PathType Leaf}, ErrorMessage = "Input file must be a valid file path")]
         [string]$inputFile,
 
-        [Paramter(Mandatory=$False)]
+        [Parameter(Mandatory=$False)]
         [int]$lines = 10
     )
 
